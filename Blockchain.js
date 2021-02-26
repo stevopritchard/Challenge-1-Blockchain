@@ -1,24 +1,25 @@
-const Block = require('./Block') 
-const crypto = require('crypto')
+// const Block = require('./Block') 
+// const crypto = require('crypto')
 
 class Blockchain {
     constructor() {
         this.chain = [
             Block.genesisBlock(
                 "Welcome to your Blockchain!",
-                crypto.createHash('SHA256').update(Block.newTimestamp()+"Welcome to your Blockchain!"+"0"+0+0).digest('hex'),
+                Blockchain.genHash(),
                 0
             )
-        ] //need to provide valid hash to genesis block
+        ]
         this.difficulty = 3;
         //don't assign 'magic' numbers to 'difficulty
     }
 
-    static newHash(data, prevHash, index, timestamp, nonce) {
-        return crypto
-        .createHash('SHA256')
-        .update(timestamp+data+prevHash+index+nonce)
-        .digest('hex');
+    newHash(data, prevHash, index, timestamp, nonce) {
+        return sha256((timestamp+data+prevHash+index+nonce))
+    }
+
+    static genHash() { //static method is available to the constructor
+        return sha256((Block.newTimestamp()+"Welcome to your Blockchain!"+"0"+0+0).toString())
     }
     
     validHash(block){
@@ -26,9 +27,8 @@ class Blockchain {
         let {data, prevHash, hash, index, timestamp, nonce} = block
         while (hash.substr(0,this.difficulty) !== "000") //this needs to be a variable length string
         {
-            hash = Blockchain.newHash(data, prevHash, index, timestamp, nonce)
+            hash = this.newHash(data, prevHash, index, timestamp, nonce)
             nonce++
-            // console.log(`Hash: ${hash}, \nNonce: ${nonce}`)
             block.hash = hash
             block.nonce = nonce
         }
@@ -40,9 +40,8 @@ class Blockchain {
             let {data, prevHash, hash, index, timestamp, nonce} = block
             while (hash.substr(0, this.difficulty) !== "000")
             {
-                hash = Blockchain.newHash(data, prevHash, index, timestamp, nonce)
+                hash = sha256((data+prevHash+index+timestamp+nonce).toString())
                 nonce++
-                // console.log(`Hash: ${hash}, \nNonce: ${nonce}`)
                 block.hash = hash
                 block.nonce = nonce
             }
@@ -51,23 +50,27 @@ class Blockchain {
         return this.chain
     }
 
-    get nextBlock() {
+    get getChain() {
+        return this.chain
+    }
+
+    get nextBlock() { //consider making this a static function
         this.refreshHash()
         let lastBlock = this.chain[this.chain.length-1];
         let newBlock = new Block (
-                            this.chain[this.chain.length-1].data,
+                            "",
                             lastBlock.prevHash,
-                            Blockchain.newHash(Block.newTimestamp,),
+                            "",
                             this.chain[this.chain.length-1].index+1,
                             Block.newTimestamp(),
                             0
                         )
-
         this.chain.push(this.validHash(newBlock));
         return this.chain
     }
 }
 
-console.log(new Blockchain().nextBlock)
-
+// console.log(new Blockchain().chain)
+// console.log(new Blockchain().nextBlock)
+// console.log(new Blockchain().getChain)
 // console.log(new Blockchain().refreshHash())
