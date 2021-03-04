@@ -1,6 +1,3 @@
-// const Block = require('./Block') 
-// const crypto = require('crypto')
-
 class Blockchain {
     constructor() {
         this.chain = [
@@ -24,8 +21,8 @@ class Blockchain {
     
     validHash(block){
         //this will update the hash of the current block if any of the block's values are changed
-        let {data, prevHash, hash, index, timestamp, nonce} = block
-        while (hash.substr(0,this.difficulty) !== "000") //this needs to be a variable length string
+        let {data, prevHash, hash, index, timestamp, nonce} = block;
+        while (hash.substr(0, this.difficulty) !== "000") //this needs to be a variable length string
         {
             hash = this.newHash(data, prevHash, index, timestamp, nonce)
             nonce++
@@ -35,19 +32,25 @@ class Blockchain {
         return block
     }
 
-    refreshHash() {
-        this.chain.forEach(block => {
-            let {data, prevHash, hash, index, timestamp, nonce} = block
-            while (hash.substr(0, this.difficulty) !== "000")
-            {
-                hash = sha256((data+prevHash+index+timestamp+nonce).toString())
-                nonce++
-                block.hash = hash
-                block.nonce = nonce
+    correctHash(chain) {
+        chain.forEach(this.validHash.bind(this));
+        return chain
+    }
+
+    refreshHash(index, newData) {
+        let excisedChain = this.chain.slice(index, this.chain.length)
+        let badHash
+        excisedChain.forEach((block, i) => {
+            let {prevHash, index, timestamp, nonce} = block
+            badHash = this.newHash(newData, prevHash, index, timestamp, nonce)
+            block.hash = badHash
+            if (excisedChain[i+1] !== undefined) {
+                excisedChain[i+1].prevHash = badHash
             }
-            return block
         });
-        return this.chain
+
+        console.log(excisedChain)
+        return excisedChain
     }
 
     get getChain() {
@@ -55,11 +58,11 @@ class Blockchain {
     }
 
     get nextBlock() { //consider making this a static function
-        this.refreshHash()
+        // this.correctHash(this.chain)
         let lastBlock = this.chain[this.chain.length-1];
         let newBlock = new Block (
                             "",
-                            lastBlock.prevHash,
+                            lastBlock.hash,
                             "",
                             this.chain[this.chain.length-1].index+1,
                             Block.newTimestamp(),
