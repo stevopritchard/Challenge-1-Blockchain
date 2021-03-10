@@ -25,7 +25,7 @@
         document.getElementsByClassName("blockhash")[0].placeholder = newBlockchain.chain[0].hash
         document.getElementsByClassName("blockDate")[0].innerHTML = "on "+newBlockchain.chain[0].timestamp
         document.getElementsByClassName("nonce")[0].innerHTML = newBlockchain.chain[0].nonce
-
+        document.getElementsByClassName("fixHash")[0].style.display = 'none'
         dataChange()
       }
       
@@ -81,6 +81,7 @@
         fixHash.className = "btn btn-info fixHash"
         fixHash.innerHTML = "Re-hash"
         cardBody.appendChild(fixHash)
+        fixHash.style.display = 'none';
 
         dataChange()
       }
@@ -115,19 +116,22 @@
                 hashes[k].value = correctedHashes[k-selectIndex].hash
                 prevHashes[k].value = correctedHashes[k-selectIndex].prevHash
               }
+              nonces[selectIndex].innerHTML = newBlockchain.chain[selectIndex].nonce;
               nonces[selectIndex].style.display = 'inline-block'
+              fixHashes[selectIndex].style.display = 'none'
             }
           })(i)
         }
       }
-
+      
       function removeNonce(index) {
         var blocks = [...document.getElementsByClassName("card-body")];
         var nonces = [...document.getElementsByClassName("nonce")];
         var hashes = [...document.getElementsByClassName("blockhash")];
+        var fixHashes = [...document.getElementsByClassName("fixHash")];
 
         if(hashes[index].value.substr(0,3) !== "000" && nonces[index].style.display !== 'none') {
-          nonces[index].innerHTML = newBlockchain.chain[index].nonce;
+          fixHashes[index].style.display = 'inline-block'
           nonces[index].style.display = 'none';
         }
       }
