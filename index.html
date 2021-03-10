@@ -18,7 +18,7 @@
     <script>
       let newBlockchain = new Blockchain()
       window.onload = function() {
-        newBlockchain.correctHash(newBlockchain.chain)
+        newBlockchain.validHash(newBlockchain.chain[0])
         document.getElementsByClassName("blockIndex")[0].innerHTML = "Block #"+newBlockchain.chain[0].index+1
         document.getElementsByClassName("blockdata")[0].placeholder = newBlockchain.chain[0].data
         document.getElementsByClassName("blockprevHash")[0].placeholder = newBlockchain.chain[0].prevHash
@@ -26,7 +26,7 @@
         document.getElementsByClassName("blockDate")[0].innerHTML = "on "+newBlockchain.chain[0].timestamp
         document.getElementsByClassName("nonce")[0].innerHTML = newBlockchain.chain[0].nonce
 
-        getClicked()
+        dataChange()
       }
       
       function addBlock(){
@@ -76,51 +76,65 @@
         nonce.className = "badge badge-default nonce"
         cardBody.appendChild(nonce)
         nonce.innerHTML = currentBlock.nonce
-        
-        // let hashForms = [...document.getElementsByClassName("blockhash")]
-        // console.log(hashForms[0].placeholder)
-        // hashForms.forEach(function(form, i) {
-        //   form.value = form.placeholder
-        //   console.log(form.value, form.placeholder)
-        // })
-        getClicked()
+        var fixHash = document.createElement("button")
+        fixHash.type = "button"
+        fixHash.className = "btn btn-info fixHash"
+        fixHash.innerHTML = "Re-hash"
+        cardBody.appendChild(fixHash)
+
+        dataChange()
       }
 
-      function getClicked() {
+      function dataChange() {
         var inputs = [...document.getElementsByClassName("blockdata")];
         var hashes = [...document.getElementsByClassName("blockhash")];
         var prevHashes = [...document.getElementsByClassName("blockprevHash")];
+        var fixHashes = [...document.getElementsByClassName("fixHash")];
         for (var i = 0; i < inputs.length; i ++) {
-          (function(index){
-            console.log("1: "+index)
+          (function(selectIndex){
             inputs[i].onkeyup = function(){
-              refreshedChain = newBlockchain.refreshHash(index, this.value)
-              console.log(refreshedChain)
-              console.log(index)
-              // hashes.forEach((hash, index) => {
-              //   console.log("2 :"+index+" "+i)
-              //   hash.value = refreshedChain[index].hash
-              // })
-              for (j = index; j < inputs.length; j++) {
-                console.log("2: index "+index+", j "+j+", i "+i)
-                hashes[j].value = refreshedChain[j-index].hash
-                prevHashes[j].value = refreshedChain[j-index].prevHash
+              var refreshedChain = newBlockchain.refreshHash(selectIndex, this.value)
+              for (var j = selectIndex; j < inputs.length; j++) {
+                hashes[j].value = refreshedChain[j-selectIndex].hash
+                prevHashes[j].value = refreshedChain[j-selectIndex].prevHash
+                removeNonce(j)
               }
-              // prevHashes.forEach((prevHash, index) => {
-              //   prevHash.value = refreshedChain[index].prevHash
-              // })
+
+              if (newBlockchain.chain.length > 1) {
+                for ( var i = 1; i < prevHashes.length; i++) {
+                  prevHashes[i].value = newBlockchain.chain[i].prevHash
+                }
+              }
+            }
+            
+            fixHashes[i].onclick = function() {
+              var nonces = [...document.getElementsByClassName("nonce")];
+              var correctedHashes = newBlockchain.correctHashes(selectIndex)
+              console.log(selectIndex)
+              for (var k = selectIndex; k < fixHashes.length; k++) {
+                hashes[k].value = correctedHashes[k-selectIndex].hash
+                prevHashes[k].value = correctedHashes[k-selectIndex].prevHash
+              }
+              nonces[selectIndex].style.display = 'inline-block'
             }
           })(i)
         }
       }
 
-      function correctHash(index) {
-        newBlockchain.correctHash(index);
+      function removeNonce(index) {
+        var blocks = [...document.getElementsByClassName("card-body")];
+        var nonces = [...document.getElementsByClassName("nonce")];
+        var hashes = [...document.getElementsByClassName("blockhash")];
+
+        if(hashes[index].value.substr(0,3) !== "000" && nonces[index].style.display !== 'none') {
+          nonces[index].innerHTML = newBlockchain.chain[index].nonce;
+          nonces[index].style.display = 'none';
+        }
       }
     </script>
 	</head>
   <body>
-    <nav class="navbar navbar-color-on-scroll navbar-transparent fixed-top navbar-expand-lg"  color-on-scroll="100">
+    <!-- <nav class="navbar navbar-color-on-scroll navbar-transparent fixed-top navbar-expand-lg"  color-on-scroll="100">
     <div class="container">
         <div class="navbar-translate">
           <a class="navbar-brand" href="https://demos.creative-tim.com/material-kit/index.html">
@@ -144,9 +158,9 @@
             </ul>
         </div>
       </div>
-    </nav>
+    </nav> -->
 
-    <div class="page-header header-filter" data-parallax="true" style="background-image: url('assets/img/bg3.jpg')">
+    <!-- <div class="page-header header-filter" data-parallax="true" style="background-image: url('assets/img/bg3.jpg')">
       <div class="container">
         <div class="row">
           <div class="col-md-8 ml-auto mr-auto">
@@ -157,12 +171,11 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
-    <div class="main main-raised">
       <div class="container blockChainContainer">
         <div class="section text-center">
-          <h2 class="title">Your main section here</h2>
+          <h2 class="title">Blockchain App</h2>
           <div class="card">
             <div class="card-header card-header-danger">
               <h4 class="card-title blockIndex" >Genesis Block</h4>
@@ -182,9 +195,8 @@
               <div class="input-group">
                 <p>Hash:</p><input class="form control blockhash" type="text" placeholder="" readonly></input>
               </div>
-              <div class="input-group">
-                <p>Nonce:</p><span class="badge badge-default nonce"></span>
-              </div>
+              <span class="badge badge-default nonce"></span>
+              <button type="button" class="btn btn-info fixHash">Re-hash</button>
             </div>
           </div>
         </div>
@@ -198,7 +210,6 @@
         </div>
         <button class="btn btn-primary btn-small" onclick="addBlock()">New block</button>
       </div>
-    </div>
 
     <footer class="footer footer-default" >
       <div class="container">
@@ -206,7 +217,7 @@
           <ul>
             <li>
               <a href="https://www.creative-tim.com/">
-                  Creative Tim
+                  (Share Link)
               </a>
             </li>
           </ul>
@@ -230,7 +241,7 @@
   <!--  Plugin for the Sliders, full documentation here: http://refreshless.com/nouislider/ -->
   <script src="assets/js/plugins/nouislider.min.js" type="text/javascript"></script>
   <!--  Google Maps Plugin  -->
-  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></script>
+  <!-- <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></script> -->
   <!-- Place this tag in your head or just before your close body tag. -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>
   <!-- Control Center for Material Kit: parallax effects, scripts for the example pages etc -->

@@ -32,9 +32,31 @@ class Blockchain {
         return block
     }
 
-    correctHash(chain) {
-        chain.forEach(this.validHash.bind(this));
-        return chain
+    correctHashes(blockIndex) {
+        let excisedChain = this.chain.slice(blockIndex, this.chain.length)
+        console.log("before: ",excisedChain)
+        this.validHash(excisedChain[0])
+        let newHash
+        // if (excisedChain[index+1] !== null) {
+            for (let i = 1; i < excisedChain.length; i++) {
+                excisedChain[i].prevHash = this.matchPrevHash(blockIndex+i)
+                let {data, prevHash, index, timestamp, nonce} = excisedChain[i]
+                newHash = this.newHash(data, prevHash, index, timestamp, nonce)
+                excisedChain[i].hash = newHash
+            }
+        // }
+
+        console.log("after: ",excisedChain)
+        console.log(this.chain)
+        return excisedChain
+    }
+
+    matchPrevHash(index) {
+        if (this.chain[index].index !== 0) {
+            console.log(index, this.chain[index-1].hash)
+            this.chain[index].prevHash = this.chain[index-1].hash
+        }
+        return this.chain[index].prevHash
     }
 
     refreshHash(index, newData) {
@@ -48,8 +70,6 @@ class Blockchain {
                 excisedChain[i+1].prevHash = badHash
             }
         });
-
-        console.log(excisedChain)
         return excisedChain
     }
 
