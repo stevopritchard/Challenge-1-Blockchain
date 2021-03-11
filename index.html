@@ -11,9 +11,134 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
 
 		<link href="assets/css/material-kit.css?v=2.0.7" rel="stylesheet" />
+
+    <script src=sha256.js type="text/javascript"></script>
+    <script src=Block.js type="text/javascript"></script>
+    <script src=Blockchain.js type="text/javascript"></script>
+    <script>
+      let newBlockchain = new Blockchain()
+      window.onload = function() {
+        newBlockchain.validHash(newBlockchain.chain[0])
+        document.getElementsByClassName("blockIndex")[0].innerHTML = "Block #"+newBlockchain.chain[0].index+1
+        document.getElementsByClassName("blockdata")[0].placeholder = newBlockchain.chain[0].data
+        document.getElementsByClassName("blockprevHash")[0].placeholder = newBlockchain.chain[0].prevHash
+        document.getElementsByClassName("blockhash")[0].placeholder = newBlockchain.chain[0].hash
+        document.getElementsByClassName("blockDate")[0].innerHTML = "on "+newBlockchain.chain[0].timestamp
+        document.getElementsByClassName("nonce")[0].innerHTML = newBlockchain.chain[0].nonce
+        document.getElementsByClassName("fixHash")[0].style.display = 'none'
+        dataChange()
+      }
+      
+      function addBlock(){
+        let currentBlock = newBlockchain.nextBlock[newBlockchain.chain.length-1]
+
+        var container = document.getElementsByClassName("blockChainContainer")[0];
+        var card = document.createElement("div");
+        card.className = "card";
+        var cardBody = document.createElement("div");
+        cardBody.className = "card-body";
+        container.appendChild(card);
+        card.appendChild(cardBody);
+
+        let formKeys = Object.keys(currentBlock).slice(0,3);
+        formKeys.forEach(function(key) {
+          var inputGroup = document.createElement('div')
+          inputGroup.className = "input-group";
+          var inputGroupPrepend = document.createElement('div')
+          inputGroupPrepend.className = "input-group-prepend";
+          var span = document.createElement("span")
+          span.className = "input-group-text";
+          span.id = `${key}Span`;
+          var spanText = document.createTextNode(`${key}: `);
+          var inputForm = document.createElement("input")
+          inputForm.className = `form-control block${key}`;
+          inputForm.placeholder = this[key]
+
+          cardBody.appendChild(inputGroup);
+          inputGroup.appendChild(inputGroupPrepend);
+          inputGroupPrepend.appendChild(span);
+          span.appendChild(spanText);
+          inputGroup.appendChild(inputForm);
+        }, currentBlock);
+
+        document.getElementsByClassName("blockdata")[newBlockchain.chain.length-1].placeholder = document.getElementById("newData").value
+
+        var blockInfo = document.createElement("div")
+        blockInfo.className = "blockName"
+        var blockName = document.createTextNode(`Block# ${currentBlock.index+1}`)
+        blockInfo.appendChild(blockName)
+        cardBody.appendChild(blockInfo)
+        var timeStamp = document.createElement("p")
+        timeStamp.className = "timestamp"
+        timeStamp.innerHTML = `created: ${currentBlock.timestamp}`
+        blockInfo.appendChild(timeStamp)
+        var nonce = document.createElement("span")
+        nonce.className = "badge badge-default nonce"
+        cardBody.appendChild(nonce)
+        nonce.innerHTML = currentBlock.nonce
+        var fixHash = document.createElement("button")
+        fixHash.type = "button"
+        fixHash.className = "btn btn-info fixHash"
+        fixHash.innerHTML = "Re-hash"
+        cardBody.appendChild(fixHash)
+        fixHash.style.display = 'none';
+
+        dataChange()
+      }
+
+      function dataChange() {
+        var inputs = [...document.getElementsByClassName("blockdata")];
+        var hashes = [...document.getElementsByClassName("blockhash")];
+        var prevHashes = [...document.getElementsByClassName("blockprevHash")];
+        var fixHashes = [...document.getElementsByClassName("fixHash")];
+        for (var i = 0; i < inputs.length; i ++) {
+          (function(selectIndex){
+            inputs[i].onkeyup = function(){
+              var refreshedChain = newBlockchain.refreshHash(selectIndex, this.value)
+              for (var j = selectIndex; j < inputs.length; j++) {
+                hashes[j].value = refreshedChain[j-selectIndex].hash
+                prevHashes[j].value = refreshedChain[j-selectIndex].prevHash
+                removeNonce(j)
+              }
+
+              if (newBlockchain.chain.length > 1) {
+                for ( var i = 1; i < prevHashes.length; i++) {
+                  prevHashes[i].value = newBlockchain.chain[i].prevHash
+                }
+              }
+            }
+            
+            fixHashes[i].onclick = function() {
+              var nonces = [...document.getElementsByClassName("nonce")];
+              var correctedHashes = newBlockchain.correctHashes(selectIndex)
+              console.log(selectIndex)
+              for (var k = selectIndex; k < fixHashes.length; k++) {
+                hashes[k].value = correctedHashes[k-selectIndex].hash
+                prevHashes[k].value = correctedHashes[k-selectIndex].prevHash
+              }
+              nonces[selectIndex].innerHTML = newBlockchain.chain[selectIndex].nonce;
+              nonces[selectIndex].style.display = 'inline-block'
+              fixHashes[selectIndex].style.display = 'none'
+            }
+          })(i)
+        }
+      }
+      
+      function removeNonce(index) {
+        var blocks = [...document.getElementsByClassName("card-body")];
+        var nonces = [...document.getElementsByClassName("nonce")];
+        var hashes = [...document.getElementsByClassName("blockhash")];
+        var fixHashes = [...document.getElementsByClassName("fixHash")];
+
+        if(hashes[index].value.substr(0,3) !== "000" && nonces[index].style.display !== 'none') {
+          fixHashes[index].style.display = 'inline-block'
+          nonces[index].style.display = 'none';
+        }
+      }
+    </script>
 	</head>
   <body>
-    <nav class="navbar navbar-color-on-scroll navbar-transparent fixed-top navbar-expand-lg"  color-on-scroll="100">
+    <!-- <nav class="navbar navbar-color-on-scroll navbar-transparent fixed-top navbar-expand-lg"  color-on-scroll="100">
     <div class="container">
         <div class="navbar-translate">
           <a class="navbar-brand" href="https://demos.creative-tim.com/material-kit/index.html">
@@ -37,9 +162,9 @@
             </ul>
         </div>
       </div>
-    </nav>
+    </nav> -->
 
-    <div class="page-header header-filter" data-parallax="true" style="background-image: url('assets/img/bg3.jpg')">
+    <!-- <div class="page-header header-filter" data-parallax="true" style="background-image: url('assets/img/bg3.jpg')">
       <div class="container">
         <div class="row">
           <div class="col-md-8 ml-auto mr-auto">
@@ -50,15 +175,45 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
-    <div class="main main-raised">
-      <div class="container">
+      <div class="container blockChainContainer">
         <div class="section text-center">
-          <h2 class="title">Your main section here</h2>
+          <h2 class="title">Blockchain App</h2>
+          <div class="card">
+            <div class="card-header card-header-danger">
+              <h4 class="card-title blockIndex" >Genesis Block</h4>
+              <p class="blockDate"></p>
+            </div>
+            <div class="card-body">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="basic-addon1">Data:</span>
+                </div>
+                <input type="text" class="form-control blockdata" placeholder="" ></input>
+              </div>
+
+              <div class="input-group">
+                <p>Previous hash: </p><input class="form control blockprevHash" type="text" placeholder="" readonly></input>
+              </div>
+              <div class="input-group">
+                <p>Hash:</p><input class="form control blockhash" type="text" placeholder="" readonly></input>
+              </div>
+              <span class="badge badge-default nonce"></span>
+              <button type="button" class="btn btn-info fixHash">Re-hash</button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+      <div class=container>
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <span class="input-group-text">Data: </span>
+          </div>
+          <input type="text" class="form-control" id="newData" placeholder="">
+        </div>
+        <button class="btn btn-primary btn-small" onclick="addBlock()">New block</button>
+      </div>
 
     <footer class="footer footer-default" >
       <div class="container">
@@ -66,7 +221,7 @@
           <ul>
             <li>
               <a href="https://www.creative-tim.com/">
-                  Creative Tim
+                  (Share Link)
               </a>
             </li>
           </ul>
@@ -80,7 +235,6 @@
         </div>
       </div>
     </footer>
-    
   <!--   Core JS Files   -->
   <script src="assets/js/core/jquery.min.js" type="text/javascript"></script>
   <script src="assets/js/core/popper.min.js" type="text/javascript"></script>
@@ -91,7 +245,7 @@
   <!--  Plugin for the Sliders, full documentation here: http://refreshless.com/nouislider/ -->
   <script src="assets/js/plugins/nouislider.min.js" type="text/javascript"></script>
   <!--  Google Maps Plugin  -->
-  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></script>
+  <!-- <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></script> -->
   <!-- Place this tag in your head or just before your close body tag. -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>
   <!-- Control Center for Material Kit: parallax effects, scripts for the example pages etc -->

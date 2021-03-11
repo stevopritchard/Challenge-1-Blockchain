@@ -16,7 +16,7 @@ class Block {
     }
     
     static newTimestamp() {
-        this.timestamp = new Date().getTime()
+        this.timestamp = new Date()
         return this.timestamp
     };
 
@@ -32,4 +32,4 @@ class Block {
     }
 }
 
-module.exports = Block
+// module.exports = Block
