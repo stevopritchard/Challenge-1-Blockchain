@@ -1,0 +1,42 @@
+#addBlock {
+    /* display: flex; */
+    /* width: 30px; */
+    /* height: 30px; */
+    justify-content: center;
+    padding: 30;
+    font-size: 10px;
+}
+
+.card-body .container-fluid .bmd-form-group .input-group {
+    padding: 7px 0 7px 7px
+}
+
+.container-fluid {
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+.card-body .row {
+    min-height: 80px;
+    padding-top: 30px;
+}
+
+.blockIndex {
+    font-weight: bold;
+    font-size: 1.7em;
+}
+
+.section {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    align-items: center;
+}
+
+#newDataGroup {
+    max-width: 600px;
+}
+
+.card {
+    max-width: 800px;
+}

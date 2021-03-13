@@ -9,6 +9,7 @@
       
 	<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="styles.css">
 
 		<link href="assets/css/material-kit.css?v=2.0.7" rel="stylesheet" />
 
@@ -19,7 +20,7 @@
       let newBlockchain = new Blockchain()
       window.onload = function() {
         newBlockchain.validHash(newBlockchain.chain[0])
-        document.getElementsByClassName("blockIndex")[0].innerHTML = "Block #"+newBlockchain.chain[0].index+1
+        document.getElementsByClassName("blockIndex")[0].innerHTML = "Block #"+(newBlockchain.chain[0].index+1)
         document.getElementsByClassName("blockdata")[0].placeholder = newBlockchain.chain[0].data
         document.getElementsByClassName("blockprevHash")[0].placeholder = newBlockchain.chain[0].prevHash
         document.getElementsByClassName("blockhash")[0].placeholder = newBlockchain.chain[0].hash
@@ -32,29 +33,55 @@
       function addBlock(){
         let currentBlock = newBlockchain.nextBlock[newBlockchain.chain.length-1]
 
-        var container = document.getElementsByClassName("blockChainContainer")[0];
+        var section = document.getElementsByClassName("section")[0];
         var card = document.createElement("div");
         card.className = "card";
         var cardBody = document.createElement("div");
         cardBody.className = "card-body";
-        container.appendChild(card);
+        section.appendChild(card);
         card.appendChild(cardBody);
+        var containerFluid = document.createElement("div");
+        containerFluid.className = "container-fluid"
+        cardBody.appendChild(containerFluid)
+        var bmdFormGroup = document.createElement("div");
+        bmdFormGroup.className = "bmd-form-group"
+        containerFluid.appendChild(bmdFormGroup)
 
         let formKeys = Object.keys(currentBlock).slice(0,3);
         formKeys.forEach(function(key) {
           var inputGroup = document.createElement('div')
           inputGroup.className = "input-group";
           var inputGroupPrepend = document.createElement('div')
-          inputGroupPrepend.className = "input-group-prepend";
+          inputGroupPrepend.className = "input-group-prepend col-3";
           var span = document.createElement("span")
           span.className = "input-group-text";
           span.id = `${key}Span`;
-          var spanText = document.createTextNode(`${key}: `);
+          var spanText = document.createTextNode("");
+
+          const materialIcon = document.createElement("i");
+          materialIcon.className = "material-icons"
+          switch (key) {
+            case "data" :
+              materialIcon.innerHTML = "description";
+              break;
+            case "prevHash" :
+              materialIcon.innerHTML = "undo";
+              break;
+            case "hash" :
+              materialIcon.innerHTML = "tag";
+              break;
+          }
+          span.appendChild(materialIcon)
+
           var inputForm = document.createElement("input")
-          inputForm.className = `form-control block${key}`;
+          inputForm.type = "text";
+          inputForm.className = `form-control text-muted col-9 block${key}`;
+          if (key == "prevHash" || key == "hash"){
+          inputForm.readOnly= true
+          }
           inputForm.placeholder = this[key]
 
-          cardBody.appendChild(inputGroup);
+          bmdFormGroup.appendChild(inputGroup);
           inputGroup.appendChild(inputGroupPrepend);
           inputGroupPrepend.appendChild(span);
           span.appendChild(spanText);
@@ -62,28 +89,38 @@
         }, currentBlock);
 
         document.getElementsByClassName("blockdata")[newBlockchain.chain.length-1].placeholder = document.getElementById("newData").value
-
-        var blockInfo = document.createElement("div")
-        blockInfo.className = "blockName"
+        var row = document.createElement("div")
+        row.className = "row"
+        cardBody.appendChild(row)
+        
+        var blockIndex = document.createElement("p")
+        blockIndex.className = "blockIndex col-3"
         var blockName = document.createTextNode(`Block# ${currentBlock.index+1}`)
-        blockInfo.appendChild(blockName)
-        cardBody.appendChild(blockInfo)
+        blockIndex.appendChild(blockName)
+        row.appendChild(blockIndex)
         var timeStamp = document.createElement("p")
-        timeStamp.className = "timestamp"
+        timeStamp.className = "blockDate col-6"
         timeStamp.innerHTML = `created: ${currentBlock.timestamp}`
-        blockInfo.appendChild(timeStamp)
+        row.appendChild(timeStamp)
+        var nonceDiv = document.createElement('div')
+        nonceDiv.className = "col-3"
+        row.appendChild(nonceDiv)
         var nonce = document.createElement("span")
-        nonce.className = "badge badge-default nonce"
-        cardBody.appendChild(nonce)
+        nonce.className = "badge badge-success nonce"
+        nonceDiv.appendChild(nonce)
         nonce.innerHTML = currentBlock.nonce
         var fixHash = document.createElement("button")
         fixHash.type = "button"
-        fixHash.className = "btn btn-info fixHash"
-        fixHash.innerHTML = "Re-hash"
-        cardBody.appendChild(fixHash)
+        fixHash.className = "btn btn-danger btn-fab btn-fab-mini btn-round fixHash"
+        fixHashIcon = document.createElement("i")
+        fixHashIcon.className = "material-icons"
+        fixHashIcon.innerHTML = "build"
+        fixHash.appendChild(fixHashIcon)
+        nonceDiv.appendChild(fixHash)
         fixHash.style.display = 'none';
 
         dataChange()
+        document.getElementById("newData").value = ""
       }
 
       function dataChange() {
@@ -138,31 +175,6 @@
     </script>
 	</head>
   <body>
-    <!-- <nav class="navbar navbar-color-on-scroll navbar-transparent fixed-top navbar-expand-lg"  color-on-scroll="100">
-    <div class="container">
-        <div class="navbar-translate">
-          <a class="navbar-brand" href="https://demos.creative-tim.com/material-kit/index.html">
-            Material Kit </a>
-
-          <button class="navbar-toggler" type="button" data-toggle="collapse" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="sr-only">Toggle navigation</span>
-              <span class="navbar-toggler-icon"></span>
-              <span class="navbar-toggler-icon"></span>
-              <span class="navbar-toggler-icon"></span>
-          </button>
-        </div>
-
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav ml-auto">
-              <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="material-icons">apps</i> Template
-                </a>
-              </li>
-            </ul>
-        </div>
-      </div>
-    </nav> -->
 
     <!-- <div class="page-header header-filter" data-parallax="true" style="background-image: url('assets/img/bg3.jpg')">
       <div class="container">
@@ -177,62 +189,79 @@
       </div>
     </div> -->
 
+
+
       <div class="container blockChainContainer">
         <div class="section text-center">
-          <h2 class="title">Blockchain App</h2>
-          <div class="card">
-            <div class="card-header card-header-danger">
-              <h4 class="card-title blockIndex" >Genesis Block</h4>
-              <p class="blockDate"></p>
-            </div>
-            <div class="card-body">
-              <div class="input-group">
-                <div class="input-group-prepend">
-                  <span class="input-group-text" id="basic-addon1">Data:</span>
-                </div>
-                <input type="text" class="form-control blockdata" placeholder="" ></input>
-              </div>
+          <h2 class="title">Blockchain Basics</h2>
 
-              <div class="input-group">
-                <p>Previous hash: </p><input class="form control blockprevHash" type="text" placeholder="" readonly></input>
+          <div class="card">
+            <div class="card-body">
+              <div class="container-fluid">
+                <span class="bmd-form-group">
+                  <div class="input-group">
+                    <div class="input-group-prepend col-3">
+                      <span class="input-group-text">
+                        <i class="material-icons" data-toggle="tooltip" data-placement="left" title="Data">description</i>
+                      </span>
+                    </div>
+                    <input type="text" class="form-control blockdata col-9" placeholder="" ></input>
+                  </div>
+  
+                  <div class="input-group">
+                    <div class="input-group-prepend col-3">
+                      <span class="input-group-text">
+                        <i class="material-icons" data-toggle="tooltip" data-placement="left" title="Previous Hash">undo</i>
+                      </span>
+                    </div>
+                    <input type="text" class="form control text-muted col-9 blockprevHash"  placeholder="" readonly></input>
+                  </div>
+  
+                  <div class="input-group">
+                    <div class="input-group-prepend col-3">
+                      <span class="input-group-text">
+                        <i class="material-icons" data-toggle="tooltip" data-placement="left" title="Hash">tag</i>
+                      </span>
+                    </div>
+                    <input class="form control text-muted blockhash col-9" type="text" placeholder="" readonly></input>
+                  </div>
+                </span>
               </div>
-              <div class="input-group">
-                <p>Hash:</p><input class="form control blockhash" type="text" placeholder="" readonly></input>
+              <div class="row">
+                <p class="blockIndex col-3"></p>
+                <p class="blockDate col-6"></p>
+                <div class="col-3">
+                  <span class="badge badge-success nonce"></span>
+                  <button type="button" class="btn btn-danger btn-fab btn-fab-mini btn-round fixHash">
+                    <i class="material-icons">build</i>
+                  </button>
+                </div>
               </div>
-              <span class="badge badge-default nonce"></span>
-              <button type="button" class="btn btn-info fixHash">Re-hash</button>
             </div>
           </div>
+
         </div>
-      </div>
-      <div class=container>
-        <div class="input-group">
-          <div class="input-group-prepend">
-            <span class="input-group-text">Data: </span>
+      <div class="section text-center">
+        <div class="container" id=newDataGroup>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Data: </span>
+            </div>
+            <input type="text" class="form-control" id="newData" placeholder="">
           </div>
-          <input type="text" class="form-control" id="newData" placeholder="">
+          <button class="btn btn-primary btn-fab btn-fab-mini btn-round" id="addBlock" onclick="addBlock()">
+            <span class="material-icons md-48">add_circle_outline</span>
+          </button>
         </div>
-        <button class="btn btn-primary btn-small" onclick="addBlock()">New block</button>
       </div>
 
     <footer class="footer footer-default" >
       <div class="container">
         <nav class="float-left">
-          <ul>
-            <li>
-              <a href="https://www.creative-tim.com/">
-                  (Share Link)
-              </a>
-            </li>
-          </ul>
+              <div class="row">
+                <a href="https://github.com/stevopritchard" class="material-icons">account_circle</a>
+                <p> Stephen Pritchard</p>
         </nav>
-        <div class="copyright float-right">
-            &copy;
-            <script>
-                document.write(new Date().getFullYear())
-            </script>, made with <i class="material-icons">favorite</i> by
-            <a href="https://www.creative-tim.com/" target="blank">Creative Tim</a> for a better web.
-        </div>
       </div>
     </footer>
   <!--   Core JS Files   -->

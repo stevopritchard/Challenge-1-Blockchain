@@ -16,7 +16,7 @@ class Block {
     }
     
     static newTimestamp() {
-        this.timestamp = new Date()
+        this.timestamp = new Date().toGMTString()
         return this.timestamp
     };
 
