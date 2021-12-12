@@ -18,6 +18,7 @@
     <script src=Blockchain.js type="text/javascript"></script>
     <script>
       let newBlockchain = new Blockchain()
+      //create DOM elements of genesis block
       window.onload = function() {
         newBlockchain.validHash(newBlockchain.chain[0])
         document.getElementsByClassName("blockIndex")[0].innerHTML = "Block #"+(newBlockchain.chain[0].index+1)
@@ -47,7 +48,9 @@
         bmdFormGroup.className = "bmd-form-group"
         containerFluid.appendChild(bmdFormGroup)
 
+        //get the keys for 'data', 'prevHash', 'hash' and 'index' properties of block
         let formKeys = Object.keys(currentBlock).slice(0,3);
+        //create input group for each property of block
         formKeys.forEach(function(key) {
           var inputGroup = document.createElement('div')
           inputGroup.className = "input-group";
@@ -58,6 +61,7 @@
           span.id = `${key}Span`;
           var spanText = document.createTextNode("");
 
+          //prepend input field with icon
           const materialIcon = document.createElement("i");
           materialIcon.className = "material-icons"
           switch (key) {
@@ -73,6 +77,7 @@
           }
           span.appendChild(materialIcon)
 
+          //create the actual input field itself
           var inputForm = document.createElement("input")
           inputForm.type = "text";
           inputForm.className = `form-control text-muted col-9 block${key}`;
@@ -80,7 +85,8 @@
           inputForm.readOnly= true
           }
           inputForm.placeholder = this[key]
-
+          
+          //place nodes in DOM
           bmdFormGroup.appendChild(inputGroup);
           inputGroup.appendChild(inputGroupPrepend);
           inputGroupPrepend.appendChild(span);
@@ -88,20 +94,27 @@
           inputGroup.appendChild(inputForm);
         }, currentBlock);
 
+        //set data in next block to whatever is type in the 'Data:' field at the bottom of the page 
         document.getElementsByClassName("blockdata")[newBlockchain.chain.length-1].placeholder = document.getElementById("newData").value
         var row = document.createElement("div")
         row.className = "row"
         cardBody.appendChild(row)
         
+        //now for the bottom row of the block...
+        //the element that displays the index:
         var blockIndex = document.createElement("p")
         blockIndex.className = "blockIndex col-3"
         var blockName = document.createTextNode(`Block# ${currentBlock.index+1}`)
         blockIndex.appendChild(blockName)
         row.appendChild(blockIndex)
+
+        //the text displaying the date & time of block's creation:
         var timeStamp = document.createElement("p")
         timeStamp.className = "blockDate col-6"
         timeStamp.innerHTML = `created: ${currentBlock.timestamp}`
         row.appendChild(timeStamp)
+
+        //the nonce div, with the green div displaying the nonce and the red spanner icon, to be swapped in on data mutation
         var nonceDiv = document.createElement('div')
         nonceDiv.className = "col-3"
         row.appendChild(nonceDiv)
@@ -124,14 +137,19 @@
       }
 
       function dataChange() {
+        //create variables to assign arrays of properties from all blocks
         var inputs = [...document.getElementsByClassName("blockdata")];
         var hashes = [...document.getElementsByClassName("blockhash")];
         var prevHashes = [...document.getElementsByClassName("blockprevHash")];
         var fixHashes = [...document.getElementsByClassName("fixHash")];
+        //loops through each block to prepare a function for 'data' fields on keystroke
         for (var i = 0; i < inputs.length; i ++) {
+          //IIFE that will mutate a block's hash, and successive block's hashes, on keystroke
           (function(selectIndex){
             inputs[i].onkeyup = function(){
+              //replace blockchain, from this index, with new chain of unvalidated hashes
               var refreshedChain = newBlockchain.refreshHash(selectIndex, this.value)
+              //and assign previous hashes as appropriate
               for (var j = selectIndex; j < inputs.length; j++) {
                 hashes[j].value = refreshedChain[j-selectIndex].hash
                 prevHashes[j].value = refreshedChain[j-selectIndex].prevHash
@@ -144,7 +162,7 @@
                 }
               }
             }
-            
+            //prepare an onClick function to repair chain's rashses from the specified index
             fixHashes[i].onclick = function() {
               var nonces = [...document.getElementsByClassName("nonce")];
               var correctedHashes = newBlockchain.correctHashes(selectIndex)
@@ -166,7 +184,7 @@
         var nonces = [...document.getElementsByClassName("nonce")];
         var hashes = [...document.getElementsByClassName("blockhash")];
         var fixHashes = [...document.getElementsByClassName("fixHash")];
-
+        //remove nonces from this index
         if(hashes[index].value.substr(0,3) !== "000" && nonces[index].style.display !== 'none') {
           fixHashes[index].style.display = 'inline-block'
           nonces[index].style.display = 'none';

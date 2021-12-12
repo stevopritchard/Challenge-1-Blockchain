@@ -14,7 +14,7 @@ class Block {
         this.timestamp = timestamp
         this.nonce = nonce
     }
-    
+    //static methods called by Blockchain class, instead of creating new instances of Block class
     static newTimestamp() {
         this.timestamp = new Date().toGMTString()
         return this.timestamp

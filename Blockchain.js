@@ -8,7 +8,6 @@ class Blockchain {
             )
         ]
         this.difficulty = 3;
-        //don't assign 'magic' numbers to 'difficulty
     }
 
     newHash(data, prevHash, index, timestamp, nonce) {
@@ -20,7 +19,7 @@ class Blockchain {
     }
     
     validHash(block){
-        //this will update the hash of the current block if any of the block's values are changed
+        //available to update the hash of the current block if any of the block's values are changed
         let {data, prevHash, hash, index, timestamp, nonce} = block;
         while (hash.substr(0, this.difficulty) !== "000") //this needs to be a variable length string
         {
@@ -33,25 +32,31 @@ class Blockchain {
     }
 
     correctHashes(blockIndex) {
+        //retrieve a shallow copy of a portion of the chain from the index recieved as an argument
         let excisedChain = this.chain.slice(blockIndex, this.chain.length)
         console.log("before: ",excisedChain)
+        //replace the hash of the first block from the excerpt
         this.validHash(excisedChain[0])
         let newHash
-        // if (excisedChain[index+1] !== null) {
-            for (let i = 1; i < excisedChain.length; i++) {
-                excisedChain[i].prevHash = this.matchPrevHash(blockIndex+i)
-                let {data, prevHash, index, timestamp, nonce} = excisedChain[i]
-                newHash = this.newHash(data, prevHash, index, timestamp, nonce)
-                excisedChain[i].hash = newHash
-            }
-        // }
-
+        for (let i = 1; i < excisedChain.length; i++) {
+            //'blockIndex+i' is passed to matchPrevHash because the invoked function references 
+            //the instance of Blockchain to find the appropriate preceding hash
+            //Note: even though we are working with a copy of the excised chain in THIS
+            //method, the changes to this copy are available in the instance of Blockchain too
+            //HOWEVER in hindsight I'm not sure that s
+            excisedChain[i].prevHash = this.matchPrevHash(blockIndex+i)
+            let {data, prevHash, index, timestamp, nonce} = excisedChain[i]
+            //replace the bad has with a new correct hash
+            newHash = this.newHash(data, prevHash, index, timestamp, nonce)
+            excisedChain[i].hash = newHash
+        }
         console.log("after: ",excisedChain)
         console.log(this.chain)
         return excisedChain
     }
 
     matchPrevHash(index) {
+        //sets the 'prevHash' property of the indexed block equal to the hash of the previous block
         if (this.chain[index].index !== 0) {
             console.log(index, this.chain[index-1].hash)
             this.chain[index].prevHash = this.chain[index-1].hash
